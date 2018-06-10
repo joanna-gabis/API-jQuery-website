@@ -1,77 +1,66 @@
 $(function() {
 
-    let apikey = 'QeeMRAVNyMFecA7nXQFKpOSMZuoI3JdCxC31wUBd';
-    let url = 'https://api.nasa.gov/planetary/apod?api_key=QeeMRAVNyMFecA7nXQFKpOSMZuoI3JdCxC31wUBd';
-    let galleryUrl = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=QeeMRAVNyMFecA7nXQFKpOSMZuoI3JdCxC31wUBd';
-    let newgalleryUrl = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&page=2&api_key=QeeMRAVNyMFecA7nXQFKpOSMZuoI3JdCxC31wUBd';
+  let apikey = 'QeeMRAVNyMFecA7nXQFKpOSMZuoI3JdCxC31wUBd';
+  let mainUrl = 'https://api.nasa.gov/planetary/apod?api_key=QeeMRAVNyMFecA7nXQFKpOSMZuoI3JdCxC31wUBd';
+  let galleryUrl = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&api_key=QeeMRAVNyMFecA7nXQFKpOSMZuoI3JdCxC31wUBd';
+  let newgalleryUrl = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&page=2&api_key=QeeMRAVNyMFecA7nXQFKpOSMZuoI3JdCxC31wUBd';
 
-    loadWelcomeImage();
-    loadGallery();
+  loadWelcomeImage();
+  loadGallery();
 
-    function loadWelcomeImage() {
-        $.ajax({
-            url: url,
-            dataType: 'json',
-            method: 'GET'
-        }).done(function(response) {
-            let welcomeSection = $('.welcomesection');
-            welcomeSection.css('background-image', `url('${response.hdurl}')`);
-            console.log(response.hdurl);
-        }).fail(function(error){
-            console.log(error);
-        })
-    }
+  function loadWelcomeImage() {
+      $.ajax({
+          url: mainUrl,
+          dataType: 'json',
+          method: 'GET'
+      }).done(function(response) {
+          let welcomeSection = $('.welcomesection');
+          welcomeSection.css('background-image', `url('${response.hdurl}')`);
+          console.log(response.hdurl);
+      }).fail(function(error){
+          console.log(error);
+      })
+  }
 
+  function loadGallery() {
+    $.ajax({
+      url: galleryUrl,
+      dataType: 'json',
+      method: 'GET'
+    }).done(function(response) {
+      let img = $('img');
+      let photos = response.photos;
 
+      for(let i=0; i<6; i++) {
+        $(img[i]).attr('src', `${photos[i].img_src}`);
+      }
+  }).fail(function(error) {
+      console.log(error);
+  })
+}
 
-    function loadGallery() {
-        $.ajax({
-            url: galleryUrl,
-            dataType: 'json',
-            method: 'GET'
-        }).done(function(response) {
-            let img = $('.img');
-            let photos = response.photos;
+let counter = 6;
 
-            img.append(function() {
-                let randomPhoto = photos[Math.floor(Math.random() * photos.length)];
+  $('button').on('click', function() {
+    $.ajax({
+      url: galleryUrl,
+      dataType: 'json',
+      method: 'GET'
+    }).done(function(response) {
+      let photos = response.photos;
 
-               return `<img src=${randomPhoto.img_src}>`;
-            })
-        }).fail(function(error) {
-            console.log(error);
-        })
-    }
-
-    $('button').on('click', function() {
-
-       let newPics =  $('.gallerypart').eq(0).clone().appendTo($('.gallery')).find('.img');
-       newPics.empty();
-
-        $.ajax({
-            url: newgalleryUrl,
-            dataType: 'json',
-            method: 'GET'
-        }).done(function(response) {
-            let photos = response.photos;
-            console.log(photos);
-
-            newPics.append(function() {
-                let randomPhoto = photos[Math.floor(Math.random() * photos.length)];
-                return `<img src=${randomPhoto.img_src}>`;
-            })
-        }).fail(function(error) {
-            console.log(error);
-        })
-    });
-
-
-
-
-
-
-
-
-
-
+      if(counter<photos.length) {
+        for(let i=0; i<6; i++) {
+          $('.gallery').append(function() {
+            counter++;
+            return `<img src='${photos[counter].img_src}'>`;
+          })
+        }
+      } else {
+        $('.gallery').append('<p class="lastPics">No more pictures to load</p>');
+      }
+    }).fail(function(error) {
+        console.log(error);
+    })
+  });
 });
